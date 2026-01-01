@@ -1,0 +1,436 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>DIGITAL - Evolución Facturación</title>
+
+<!-- Librerías -->
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
+
+<style>
+:root{
+  --card:#111827;
+  --text:#e5e7eb;
+  --base:#38bdf8;  /* azul */
+  --comp:#f59e0b;  /* amarillo */
+  --neg:#f87171;   /* rojo */
+  --diffColor:#6ee7b7; /* verde claro */
+  --ok-green: #6ee7b7;
+  --totalBg:#1e40af;
+  --siteBg:#fef3c7; 
+  --productoBg:#dbeafe; 
+  --sectorBg:#fbcfe8;
+  --comercialBg:#d1fae5; 
+  --areaBg:#fcd5ce; 
+}
+
+body{
+  margin:0;
+  font-family:Inter,Arial,sans-serif;
+  background:linear-gradient(180deg,#020617,#0f172a);
+  color:var(--text);
+}
+
+/* Estilo del Menú de Navegación */
+.nav-menu {
+  background: #111827;
+  padding: 15px;
+  text-align: center;
+  border-bottom: 1px solid #374151;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+.nav-menu a {
+  color: white;
+  margin: 0 10px;
+  text-decoration: none;
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+.nav-menu a:hover { opacity: 1; color: var(--base); }
+.nav-menu .active { font-weight: bold; border-bottom: 2px solid var(--base); opacity: 1; }
+
+h1{ text-align:center; margin:20px 0; }
+.container{ max-width:1500px; margin:auto; padding:20px; }
+.card{
+  background:rgba(17,24,39,.9);
+  border-radius:14px;
+  padding:18px;
+  margin-bottom:20px;
+}
+.filters select,input[type=file]{
+  background:#1f2933;
+  color:var(--text);
+  border:1px solid #1f2937;
+  padding:8px 10px;
+  border-radius:8px;
+  margin-right:14px;
+}
+.filters label{ font-weight:600; margin-right:6px; display:block; margin-top:10px; }
+
+.filtersRow{
+  display:flex;
+  gap:20px;
+  flex-wrap:wrap;
+  align-items:flex-start;
+}
+.filtersRow div select{ width:220px; font-weight:600; }
+
+.checkboxGroup{ display:flex; flex-wrap:wrap; gap:10px; margin-top:5px; }
+.checkboxGroup label{ font-weight:400; }
+
+.totalBlock{ background:var(--totalBg); padding:15px; border-radius:12px; margin-top:10px; }
+.totalValues{ display:flex; justify-content:space-around; font-size:18px; }
+.totalValues div{text-align:center;}
+.totalValues .value{ font-size:22px; font-weight:700; }
+#diffPercent.negative { color: var(--neg); }
+
+.statsBlock{ display:flex; justify-content:center; border-radius:12px; margin:20px 0; gap:10px; flex-wrap:wrap; }
+.subBlock{ border-radius:12px; padding:20px; display:flex; align-items:center; justify-content:center; }
+.statsBase{ flex:0 0 450px; background:var(--comp); color: #111; }
+.statsDiff{ flex:0 0 300px; background:var(--diffColor); color: #111; }
+.statsComp{ flex:0 0 450px; background:var(--base); color: #111; }
+
+.statsValues{ display:flex; justify-content:center; font-size:16px; gap:18px; flex-wrap:wrap; }
+.statsValues div{text-align:center;}
+.statsValues .value{ font-size:18px; font-weight:700; }
+.statsDiff .value.negative{ color:var(--neg); }
+.statsDiff div:first-child{ font-weight:700; }
+
+.labelBase{ color:#f59e0b; font-weight:700; }
+.labelComp{ color:#38bdf8; font-weight:700; }
+
+#fSite{ background:var(--siteBg); color:#111; }
+#fProduct{ background:var(--productoBg); color:#111; }
+#fSector{ background:var(--sectorBg); color:#111; }
+#fComercial{ background:var(--comercialBg); color:#111; }
+#fArea{ background:var(--areaBg); color:#111; }
+
+.grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(480px,1fr)); gap:20px; }
+.chart{ height:420px; }
+</style>
+</head>
+
+<body>
+
+<nav class="nav-menu">
+  <span style="color: #38bdf8; font-weight: bold; margin-right: 10px; opacity: 0.6;">DIGITAL:</span>
+  <a href="digital-datos-graficos.html">Datos</a>
+  <a href="digital-facturacion-desglosada.html" class="active">Desglose</a>
+  <a href="digital-display.html">Display</a>
+  <a href="digital-totales-familas-productos.html">Productos</a>
+
+  <span style="color: #f59e0b; font-weight: bold; margin-left: 20px; margin-right: 10px; border-left: 1px solid #4b5563; padding-left: 20px;">PRINT:</span>
+  <a href="print-datos-graficos.html">Datos</a>
+  <a href="print-facturacion-desglosada.html">Desglose</a>
+
+  <a href="index.html" style="margin-left: 20px; border-left: 1px solid #4b5563; padding-left: 20px; color: #fff; opacity: 0.5;">🏠 Inicio</a>
+</nav>
+
+<h1>DIGITAL - Evolución Facturación</h1>
+
+<div class="container">
+
+  <div class="card">
+    <label>Cargar datos manualmente: </label>
+    <input type="file" id="fileInput" accept=".json,.xlsx">
+    <p id="loadStatus" style="font-size: 0.8em; color: var(--ok-green); margin-top: 10px;">Selecciona un archivo para empezar.</p>
+  </div>
+
+  <div id="siteBlock" class="card filters" style="display:none">
+    <div class="filtersRow">
+      <div><label>Site</label><select id="fSite"></select></div>
+      <div><label>Producto</label><select id="fProduct"></select></div>
+      <div><label>Sector</label><select id="fSector"></select></div>
+      <div><label>Comercial</label><select id="fComercial"></select></div>
+      <div><label>Área</label><select id="fArea"></select></div>
+    </div>
+  </div>
+
+  <div id="filters" class="card filters" style="display:none">
+    <div class="filtersRow">
+      <div>
+        <label class="labelBase">Año base</label>
+        <select id="fYear"></select>
+        <div class="checkboxGroup" id="monthsBase"></div>
+      </div>
+      <div>
+        <label class="labelComp">Año comparación</label>
+        <select id="fYear2"></select>
+        <div class="checkboxGroup" id="monthsComp"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="totalBlock" class="card filters" style="display:none">
+    <div class="totalBlock">
+      <div class="totalValues">
+        <div><div>Año base</div><div id="totalYear1" class="value">0€</div></div>
+        <div><div>Año comparación</div><div id="totalYear2" class="value">-</div></div>
+        <div><div>% diferencia</div><div id="diffPercent" class="value">-</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="statsBlock" class="card filters" style="display:none">
+    <div class="statsBlock">
+      <div class="subBlock statsBase">
+        <div class="statsValues">
+          <div><div>Fact. Año Base</div><div id="totalStatsBase" class="value">0€</div></div>
+          <div><div>Nº líneas</div><div id="linesStatsBase" class="value">0</div></div>
+          <div><div>Presupuesto medio</div><div id="avgStatsBase" class="value">0€</div></div>
+        </div>
+      </div>
+      <div class="subBlock statsDiff">
+        <div class="statsValues">
+          <div><div>% Crecimiento Presupuesto Medio</div><div id="diffAvgStats" class="value">0%</div></div>
+        </div>
+      </div>
+      <div class="subBlock statsComp">
+        <div class="statsValues">
+          <div><div>Fact. Año Comparación</div><div id="totalStatsComp" class="value">-</div></div>
+          <div><div>Nº líneas</div><div id="linesStatsComp" class="value">0</div></div>
+          <div><div>Presupuesto medio</div><div id="avgStatsComp" class="value">-</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="chartsGrid" class="grid" style="display:none">
+    <div class="card"><h2>Área acumulada</h2><div id="chartArea" class="chart"></div></div>
+    <div class="card"><h2>Barras agrupadas</h2><div id="chartBar" class="chart"></div></div>
+    <div class="card"><h2>Líneas</h2><div id="chartLine" class="chart"></div></div>
+    <div class="card"><h2>Barras apiladas</h2><div id="chartStack" class="chart"></div></div>
+  </div>
+</div>
+
+<script>
+const MONTHS=["01 Enero","02 Febrero","03 Marzo","04 Abril","05 Mayo","06 Junio","07 Julio","08 Agosto","09 Septiembre","10 Octubre","11 Noviembre","12 Diciembre"];
+let rawData=[];
+
+/* --- Carga automática eliminada (sin fetch en onload) --- */
+
+/* --- Normalización --- */
+function normalizeText(s){
+  if(s==null) return "";
+  return String(s).replace(/\u00A0/g, " ").trim().replace(/\s+/g, " ").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase();
+}
+function normalizeMonth(m){
+  if(!m) return "";
+  const s = String(m).replace(/\u00A0/g," ").trim();
+  const n = s.substring(0,2);
+  return MONTHS.find(x=>x.startsWith(n)) || "";
+}
+function num(v){
+  if(v==null) return 0;
+  let s = String(v)
+    .replace(/\u00A0/g," ")
+    .replace(/€/g,"")
+    .replace(/\s/g,"")
+    .replace(/\./g,"")
+    .replace(/,/g,".");
+  const n = Number(s);
+  return Number.isFinite(n) ? n : 0;
+}
+
+/* ----- Formateadores sólidos ----- */
+const currencyFormatter = new Intl.NumberFormat('es-ES', {
+  useGrouping: true,
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0
+});
+function formatCurrency(n){
+  const val = Math.round(Number(n) || 0);
+  return (Number.isFinite(val) ? currencyFormatter.format(val) : '0') + '€';
+}
+const integerFormatter = new Intl.NumberFormat('es-ES', {
+  useGrouping: true,
+  maximumFractionDigits: 0
+});
+function formatInteger(n){
+  const val = Number(n || 0);
+  return Number.isFinite(val) ? integerFormatter.format(val) : '0';
+}
+
+/* --- Carga manual de fichero --- */
+fileInput.onchange = e => {
+  const f = e.target.files[0];
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    const ext = f.name.split(".").pop().toLowerCase();
+    if(ext === "json") init(JSON.parse(ev.target.result));
+    else {
+      const wb = XLSX.read(ev.target.result, {type:"binary"});
+      init(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]));
+    }
+  };
+  f.name.endsWith("json") ? r.readAsText(f) : r.readAsBinaryString(f);
+};
+
+function init(data){
+  rawData = data.map(d => ({
+    ingreso: num(d["Imp.Neto a Comisionar"]),
+    Año: normalizeText(d["Año inserción"]),
+    Mes: normalizeMonth(d["Mes inserción"]),
+    Site: normalizeText(d["Publicación"]),
+    Product: normalizeText(d["Producto"]),
+    Sector: normalizeText(d["Sector"]),
+    Comercial: normalizeText(d["Comercial"]),
+    Area: normalizeText(d["ÁREAS"])
+  }));
+
+  const years       = [...new Set(rawData.map(d=>d.Año).filter(Boolean))].sort((a,b)=>b.localeCompare(a));
+  const sites       = [...new Set(rawData.map(d=>d.Site).filter(Boolean))].sort();
+  const products    = [...new Set(rawData.map(d=>d.Product).filter(Boolean))].sort();
+  const sectors     = [...new Set(rawData.map(d=>d.Sector).filter(Boolean))].sort();
+  const commercials = [...new Set(rawData.map(d=>d.Comercial).filter(Boolean))].sort();
+  const areas       = [...new Set(rawData.map(d=>d.Area).filter(Boolean))].sort();
+
+  fSite.innerHTML     = "<option>Todos</option>" + sites.map(s=>`<option>${s}</option>`).join("");
+  fProduct.innerHTML  = "<option>Todos</option>" + products.map(p=>`<option>${p}</option>`).join("");
+  fSector.innerHTML   = "<option>Todos</option>" + sectors.map(s=>`<option>${s}</option>`).join("");
+  fYear.innerHTML     = "<option>Todos</option>" + years.map(y=>`<option>${y}</option>`).join("");
+  fYear2.innerHTML    = "<option>Sin comparar</option>" + years.map(y=>`<option>${y}</option>`).join("");
+  fComercial.innerHTML= "<option>Todos</option>" + commercials.map(c=>`<option>${c}</option>`).join("");
+  fArea.innerHTML     = "<option>Todos</option>" + areas.map(a=>`<option>${a}</option>`).join("");
+
+  document.getElementById("monthsBase").innerHTML = MONTHS.map(m => `<label><input type="checkbox" value="${m}" onchange="render()"> ${m.slice(3)}</label>`).join("");
+  document.getElementById("monthsComp").innerHTML = MONTHS.map(m => `<label><input type="checkbox" value="${m}" onchange="render()"> ${m.slice(3)}</label>`).join("");
+
+  [fSite,fProduct,fSector,fYear,fYear2,fComercial,fArea].forEach(e => e.onchange = render);
+
+  siteBlock.style.display = "block"; 
+  filters.style.display   = "block"; 
+  totalBlock.style.display= "block"; 
+  statsBlock.style.display= "flex"; 
+  chartsGrid.style.display= "grid";
+
+  render();
+}
+
+function getSelectedMonths(id){
+  const sel = Array.from(document.getElementById(id).querySelectorAll("input:checked")).map(c => c.value);
+  return sel.length ? sel : MONTHS;
+}
+
+function filterData(year,site,product,sector,com,area,months){
+  const [y,s,p,sec,c,a] = [year,site,product,sector,com,area].map(normalizeText);
+  return rawData.filter(d =>
+    (y==="TODOS" || d.Año===y) &&
+    (s==="TODOS" || d.Site===s) &&
+    (p==="TODOS" || d.Product===p) &&
+    (sec==="TODOS" || d.Sector===sec) &&
+    (c==="TODOS" || d.Comercial===c) &&
+    (a==="TODOS" || d.Area===a) &&
+    months.includes(d.Mes)
+  );
+}
+
+function monthlySeries(data){
+  const map = {}; MONTHS.forEach(m => map[m] = 0);
+  data.forEach(d => { if(d.Mes) map[d.Mes] += d.ingreso; });
+  return MONTHS.map(m => Math.round(map[m]));
+}
+
+function render(){
+  const site = fSite.value, prod = fProduct.value, sec = fSector.value, y1 = fYear.value, y2 = fYear2.value, com = fComercial.value, area = fArea.value;
+  const m1 = getSelectedMonths("monthsBase"), m2 = getSelectedMonths("monthsComp");
+
+  const d1 = filterData(y1,site,prod,sec,com,area,m1);
+  const d2 = y2!=="Sin comparar" ? filterData(y2,site,prod,sec,com,area,m2) : [];
+
+  const t1 = d1.reduce((a,b) => a + b.ingreso, 0);
+  const t2 = d2.reduce((a,b) => a + b.ingreso, 0);
+
+  // Totales superiores
+  totalYear1.textContent = formatCurrency(t1);
+  totalYear2.textContent = y2!=="Sin comparar" ? formatCurrency(t2) : "-";
+  const dt = (y2!=="Sin comparar" && t2) ? Math.round(((t1/t2) - 1) * 100) : 0;
+  diffPercent.textContent = y2!=="Sin comparar" ? dt + "%" : "-";
+  diffPercent.className = "value" + (dt < 0 ? " negative" : "");
+
+  // Estadísticas Año Base (Amarillo)
+  const l1  = d1.filter(x => x.ingreso > 0).length;
+  const avg1= (l1 > 0) ? (t1 / l1) : 0;
+  totalStatsBase.textContent = formatCurrency(t1);
+  linesStatsBase.textContent = formatInteger(l1);
+  avgStatsBase.textContent   = formatCurrency(avg1);
+
+  // Estadísticas Año Comparación (Azul)
+  if(y2!=="Sin comparar"){
+    const l2  = d2.filter(x => x.ingreso > 0).length;
+    const avg2= (l2 > 0) ? (t2 / l2) : 0;
+    totalStatsComp.textContent = formatCurrency(t2);
+    linesStatsComp.textContent = formatInteger(l2);
+    avgStatsComp.textContent   = formatCurrency(avg2);
+    const diffAvg = avg2 > 0 ? Math.round(((avg1 / avg2) - 1) * 100) : 0;
+    diffAvgStats.textContent = diffAvg + "%";
+    diffAvgStats.className = "value" + (diffAvg < 0 ? " negative" : "");
+  } else {
+    totalStatsComp.textContent = "-";
+    linesStatsComp.textContent = formatInteger(0);
+    avgStatsComp.textContent   = "-";
+    diffAvgStats.textContent   = "0%";
+    diffAvgStats.className     = "value";
+  }
+
+  const v1 = monthlySeries(d1);
+  const v2 = y2!=="Sin comparar" ? monthlySeries(d2) : null;
+
+  // Layout Plotly: separadores en todo (punto miles, coma decimal) y 0 decimales en Y
+  const layout = { 
+    paper_bgcolor: "rgba(0,0,0,0)", 
+    plot_bgcolor: "rgba(0,0,0,0)", 
+    font: { color: "#e5e7eb" }, 
+    margin: { t:20, l:60, r:30, b:40 },
+    yaxis: { tickformat: ',.0f' },
+    separators: '.,'
+  };
+
+  // Gráfico de líneas
+  Plotly.newPlot(
+    "chartLine",
+    [
+      { x: MONTHS, y: v1, type: "scatter", mode: "lines+markers", name: y1, line: { color: "#38bdf8" }, hovertemplate: '%{y:,.0f}€<extra></extra>' },
+      ...(v2 ? [{ x: MONTHS, y: v2, type: "scatter", mode: "lines+markers", name: y2, line: { color: "#f59e0b" }, hovertemplate: '%{y:,.0f}€<extra></extra>' }] : [])
+    ],
+    layout
+  );
+
+  // Barras agrupadas
+  Plotly.newPlot(
+    "chartBar",
+    [
+      { x: MONTHS, y: v1, type: "bar", name: y1, marker: { color: "#38bdf8" }, hovertemplate: '%{y:,.0f}€<extra></extra>' },
+      ...(v2 ? [{ x: MONTHS, y: v2, type: "bar", name: y2, marker: { color: "#f59e0b" }, hovertemplate: '%{y:,.0f}€<extra></extra>' }] : [])
+    ],
+    { ...layout, barmode: "group" }
+  );
+
+  // Área acumulada
+  Plotly.newPlot(
+    "chartArea",
+    [
+      { x: MONTHS, y: v1, type: "scatter", fill: "tozeroy", name: y1, line: { color: "#38bdf8" }, hovertemplate: '%{y:,.0f}€<extra></extra>' },
+      ...(v2 ? [{ x: MONTHS, y: v2, type: "scatter", fill: "tozeroy", name: y2, line: { color: "#f59e0b" }, hovertemplate: '%{y:,.0f}€<extra></extra>' }] : [])
+    ],
+    layout
+  );
+
+  // Barras apiladas
+  Plotly.newPlot(
+    "chartStack",
+    [
+      { x: MONTHS, y: v1, type: "bar", name: y1, marker: { color: "#38bdf8" }, hovertemplate: '%{y:,.0f}€<extra></extra>' },
+      ...(v2 ? [{ x: MONTHS, y: v2, type: "bar", name: y2, marker: { color: "#f59e0b" }, hovertemplate: '%{y:,.0f}€<extra></extra>' }] : [])
+    ],
+    { ...layout, barmode: "stack" }
+  );
+}
+</script>
+</body>
+</html>

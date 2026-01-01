@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hub de Facturación - Publicidad</title>
+<style>
+    :root {
+        --bg: #020617;
+        --card: #111827;
+        --digital: #38bdf8;
+        --print: #f59e0b;
+        --text: #e5e7eb;
+        --border: #374151;
+    }
+    
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        background: radial-gradient(circle at top, #0f172a, #020617);
+        color: var(--text);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+    }
+
+    h1 { 
+        margin-bottom: 10px; 
+        font-size: 2.2em; 
+        text-align: center;
+        background: linear-gradient(to right, #38bdf8, #f59e0b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    p.subtitle {
+        margin-bottom: 40px;
+        opacity: 0.7;
+        font-size: 1.1em;
+    }
+
+    .hub-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+        gap: 30px;
+        max-width: 900px;
+        width: 95%;
+    }
+
+    .section-card {
+        background: var(--card);
+        padding: 40px 30px;
+        border-radius: 24px;
+        border: 1px solid var(--border);
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        transition: transform 0.3s ease;
+    }
+
+    .section-card:hover {
+        transform: translateY(-5px);
+        border-color: #4b5563;
+    }
+
+    .section-card h2 { 
+        margin-top: 0; 
+        font-size: 1.5em;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .digital-h2 { color: var(--digital); }
+    .print-h2 { color: var(--print); }
+    
+    .btn-group { 
+        display: flex; 
+        flex-direction: column; 
+        gap: 12px; 
+    }
+    
+    .btn {
+        padding: 16px;
+        border-radius: 12px;
+        text-decoration: none;
+        color: white;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        background: rgba(31, 41, 55, 0.5);
+        border: 1px solid transparent;
+    }
+
+    /* Efectos Digital */
+    .btn-digital:hover { 
+        background: rgba(56, 189, 248, 0.1);
+        border-color: var(--digital);
+        color: var(--digital);
+    }
+
+    /* Efectos Print */
+    .btn-print:hover { 
+        background: rgba(245, 158, 11, 0.1);
+        border-color: var(--print);
+        color: var(--print);
+    }
+
+    .footer-status { 
+        margin-top: 60px; 
+        font-size: 0.85em; 
+        opacity: 0.4;
+        letter-spacing: 1px;
+    }
+</style>
+</head>
+<body>
+
+    <h1>Panel de Control</h1>
+    <p class="subtitle">Selecciona un área de análisis</p>
+
+    <div class="hub-container">
+    <div class="section-card">
+        <h2 class="digital-h2">🌐 DIGITAL</h2>
+        <div class="btn-group">
+            <a href="digital-datos-graficos.html" target="_blank" class="btn btn-digital">Datos y Gráficos</a>
+            <a href="digital-facturacion-desglosada.html" target="_blank" class="btn btn-digital">Desglose de la Facturación</a>            
+<a href="digital-display.html" target="_blank" class="btn btn-digital">Display</a>
+
+            <a href="digital-totales-familas-productos.html" target="_blank" class="btn btn-digital">Análisis de Productos Seleccionados</a>
+        </div>
+    </div>
+
+    <div class="section-card">
+        <h2 class="print-h2">📰 PRINT</h2>
+        <div class="btn-group">
+            <a href="print-datos-graficos.html" target="_blank" class="btn btn-print">Datos y Gráficos</a>
+            <a href="print-facturacion-desglosada.html" target="_blank" class="btn btn-print">Desglose de la Facturación</a>
+        </div>
+    </div>
+</div>
+
+    <div class="footer-status">
+        SISTEMA DE ANÁLISIS PUBLICITARIO v2.0
+    </div>
+
+</body>
+</html>
