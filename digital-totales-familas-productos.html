@@ -1,0 +1,347 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DIGITAL - Productos Seleccionados</title>
+
+<!-- Librerías -->
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
+
+<style>
+:root{
+  --card:#111827;
+  --card-soft:#1f2933;
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+  --bc-color:#38bdf8;
+  --curated-color:#f59e0b;
+  --social-color:#10b981;
+  --display-color:#8b5cf6;
+  --program-directo:#f97316;
+  --video-color:#8b5cf6;
+  --down:#f87171;
+  --base-color:#f59e0b; 
+  --comp-color:#38bdf8; 
+  --ok-green: #6ee7b7;
+  --comercial-color:#a78bfa;
+  --site-color:#f43f5e;
+  --area-color:#fbbf24;
+  --totales-color:#06b6d4;
+  --comercial-bg-light:#efe9ff;
+  --site-bg-light:#ffe6ea;
+  --area-bg-light:#fff6d9;
+}
+
+body{
+  margin:0;
+  font-family:Inter,Arial,sans-serif;
+  background:linear-gradient(180deg,#020617,#0f172a);
+  color:var(--text);
+}
+
+/* MENÚ DE NAVEGACIÓN */
+.nav-menu {
+  background: #111827;
+  padding: 15px;
+  text-align: center;
+  border-bottom: 1px solid #374151;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+.nav-menu a {
+  color: white;
+  margin: 0 10px;
+  text-decoration: none;
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+.nav-menu a:hover { opacity: 1; color: var(--bc-color); }
+.nav-menu .active { font-weight: bold; border-bottom: 2px solid var(--bc-color); opacity: 1; }
+
+h1{ text-align:center; margin:20px 0; font-size: 1.5em; padding: 0 10px; }
+.container{ max-width:1500px; margin:auto; padding:10px; }
+
+.card{
+  background:rgba(17,24,39,.85);
+  border-radius:14px;
+  padding:18px;
+  margin-bottom:20px;
+}
+
+.filters select,input[type=file]{
+  background:var(--card-soft);
+  color:var(--text);
+  border:1px solid #1f2937;
+  padding:8px 10px;
+  border-radius:8px;
+  margin-bottom: 10px;
+}
+
+.months-container{ display:flex; flex-wrap:wrap; gap:10px; margin-top:5px; }
+.months-container label{ display:flex; align-items:center; gap:5px; font-size: 0.9em; cursor:pointer; }
+
+.inline-filters{ display:flex; gap:18px; align-items:center; flex-wrap:wrap; }
+.inline-filter { display:inline-flex; align-items:center; gap:10px; }
+.inline-filter .label{ font-weight:700; }
+.inline-filter select{ color:#111; font-weight:700; border-radius:10px; padding:8px 10px; }
+
+.inline-filter.comercial .label{ color:var(--comercial-color); }
+.inline-filter.comercial select{ background:var(--comercial-bg-light); border:1px solid #cbb6ff; }
+.inline-filter.site .label{ color:var(--site-color); }
+.inline-filter.site select{ background:var(--site-bg-light); border:1px solid #ffb3bf; }
+.inline-filter.area .label{ color:var(--area-color); }
+.inline-filter.area select{ background:var(--area-bg-light); border:1px solid #f5d77a; }
+
+.label-base { color: var(--base-color); font-weight: 700; }
+.label-comp { color: var(--comp-color); font-weight: 700; }
+
+.kpis{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:14px;
+  margin-bottom:20px;
+}
+.kpi{
+  text-align:center;
+  padding:18px;
+  background:linear-gradient(160deg,#020617,#111827);
+  border-radius:12px;
+  border: 1px solid #1f2937;
+}
+.kpi h2{ margin:0; font-size:1.6em; color:var(--bc-color); }
+.kpi p{ margin:6px 0 0; color:var(--muted); font-size: 0.9em; }
+.kpi span.pct{ display:block; margin-top:4px; font-size:0.9em; font-weight:600; }
+
+.section-title{ grid-column: 1 / -1; text-align:left; font-weight:700; font-size:1.1em; color: #fff; margin-top:15px; border-left: 4px solid #374151; padding-left: 10px; }
+</style>
+</head>
+
+<body>
+
+<nav class="nav-menu">
+    <span style="color: #38bdf8; font-weight: bold; margin-right: 10px; opacity: 0.6;">DIGITAL:</span>
+    <a href="digital-datos-graficos.html">Datos</a>
+    <a href="digital-facturacion-desglosada.html">Desglose</a>
+    <a href="digital-facturacion-por-anunciante.html">Anunciantes</a>
+    <a href="digital-display.html">Display</a>
+    <a href="digital-totales-familas-productos.html" class="active">Productos</a>
+    
+    <span style="color: #f59e0b; font-weight: bold; margin-left: 20px; margin-right: 10px; border-left: 1px solid #4b5563; padding-left: 20px;">PRINT:</span>
+    <a href="print-datos-graficos.html">Datos</a>
+    <a href="print-facturacion-desglosada.html">Desglose</a>
+    <a href="print-facturacion-por-anunciante.html">Anunciantes</a>
+    
+    <a href="index.html" style="margin-left: 20px; border-left: 1px solid #4b5563; padding-left: 20px; color: #fff; opacity: 0.5;">🏠 Inicio</a>
+</nav>
+
+<h1>DIGITAL - Productos Seleccionados</h1>
+
+<div class="container">
+  <div class="card">
+    <label>Cargar manualmente: </label>
+    <input type="file" id="fileInput" accept=".json,.xlsx">
+    <p id="loadStatus" style="font-size: 0.8em; color: var(--ok-green); margin-top: 10px;">Selecciona un archivo para empezar.</p>
+  </div>
+
+  <div id="filters" class="card filters" style="display:none">
+    <span class="label-base">Año base</span> <select id="fYear"></select><br>
+    <div id="monthContainer1" class="months-container"></div><br>
+    <span class="label-comp">Año comparación</span> <select id="fYear2"></select><br>
+    <div id="monthContainer2" class="months-container"></div>
+  </div>
+
+  <div id="inlineFiltersCard" class="card filters" style="display:none">
+    <div class="inline-filters">
+      <div class="inline-filter comercial"><span class="label">Comercial</span><select id="fComercial"></select></div>
+      <div class="inline-filter site"><span class="label">Site</span><select id="fSite"></select></div>
+      <div class="inline-filter area"><span class="label">Área</span><select id="fArea"></select></div>
+    </div>
+  </div>
+
+  <div class="kpis" id="kpisTotals"></div>
+  <div class="kpis" id="kpisRows"></div>
+</div>
+
+<script>
+let rawData=[];
+
+/* --------- CARGA AUTOMÁTICA ELIMINADA --------- */
+/* (No hay window.onload con fetch) */
+
+/* --------- Formateadores robustos --------- */
+const currencyFormatter = new Intl.NumberFormat('es-ES', {
+  useGrouping: true,
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0
+});
+function formatCurrency(n){
+  const val = Math.round(Number(n) || 0);
+  return (Number.isFinite(val) ? currencyFormatter.format(val) : '0') + '€'; // sin espacio antes de €
+}
+
+/* --------- Carga manual --------- */
+fileInput.onchange = e => {
+  const f = e.target.files[0];
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    const ext = f.name.split(".").pop().toLowerCase();
+    if(ext==="json") {
+      init(JSON.parse(ev.target.result));
+    } else {
+      const wb = XLSX.read(ev.target.result,{type:"binary"});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      init(XLSX.utils.sheet_to_json(ws));
+    }
+  };
+  f.name.endsWith("json") ? r.readAsText(f) : r.readAsBinaryString(f);
+};
+
+/* --------- Parseo y normalización --------- */
+function num(v){
+  if(!v) return 0;
+  return Number(
+    v.toString()
+     .replace(/\u00A0/g," ")
+     .replace(/€/g,"")
+     .replace(/\s/g,"")
+     .replace(/\./g,"")   // quita puntos de miles si vienen
+     .replace(/,/g,".")   // coma a punto
+  ) || 0; 
+}
+
+function init(data){
+  rawData=data.map(d=>({
+    ingreso:num(d["Imp.Neto a Comisionar"]),
+    Año:String(d["Año inserción"]||""),
+    Mes:String(d["Mes inserción"]||""),
+    Site:String(d["Publicación"]||"Sin site"),
+    Area:String(d["ÁREAS"]||"Sin área"),
+    Familia:String(d["Familia"]||"Sin familia"),
+    Subfamilia:String(d["Subfamilia"]||""),
+    Comercial:String(d["Comercial"]||"Sin comercial"),
+    Producto:String(d["Producto"]||"")
+  }));
+
+  const years=[...new Set(rawData.map(d=>d.Año).filter(Boolean))].sort((a,b)=>b-a);
+  const months=[...new Set(rawData.map(d=>d.Mes).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  
+  fYear.innerHTML="<option>Todos</option>"+years.map(y=>`<option>${y}</option>`).join("");
+  fYear2.innerHTML="<option>Sin comparar</option>"+years.map(y=>`<option>${y}</option>`).join("");
+  fComercial.innerHTML="<option>Todos</option>"+[...new Set(rawData.map(d=>d.Comercial))].sort().map(c=>`<option>${c}</option>`).join("");
+  fSite.innerHTML="<option>Todos</option>"+[...new Set(rawData.map(d=>d.Site))].sort().map(s=>`<option>${s}</option>`).join("");
+  fArea.innerHTML="<option>Todos</option>"+[...new Set(rawData.map(d=>d.Area))].sort().map(a=>`<option>${a}</option>`).join("");
+
+  createMonthCheckboxes("monthContainer1",months);
+  createMonthCheckboxes("monthContainer2",months);
+
+  [fYear,fYear2,fComercial,fSite,fArea].forEach(s=>s.onchange=render);
+  filters.style.display="block"; inlineFiltersCard.style.display="block";
+  render();
+}
+
+function createMonthCheckboxes(id,months){
+  const c=document.getElementById(id); c.innerHTML="";
+  months.forEach(m=>{
+    const l=document.createElement("label");
+    const i=document.createElement("input"); i.type="checkbox"; i.value=m; i.onchange=render;
+    // Quitamos el prefijo 01, 02... para la vista
+    const visualMonth = m.replace(/^\d{2}\s/, ""); 
+    l.appendChild(i); l.appendChild(document.createTextNode(visualMonth)); c.appendChild(l);
+  });
+}
+
+function filteredBy(year,months,com,site,area){
+  return rawData.filter(d=> 
+    (year==="Todos" || d.Año===year) &&
+    (months.length===0 || months.includes(d.Mes)) &&
+    (com==="Todos" || d.Comercial===com) &&
+    (site==="Todos" || d.Site===site) &&
+    (area==="Todos" || d.Area===area)
+  );
+}
+
+/* KPI builder: usa formatCurrency en todos los valores mostrados */
+function kpi(container,title,value,pct="",colorVar=null){
+  const h2C = colorVar ? `style="color:var(${colorVar})"` : "";
+  container.innerHTML+=`<div class="kpi"><h2 ${h2C}>${formatCurrency(value)}</h2><p>${title}</p>${pct}</div>`;
+}
+
+function render(){
+  const y1=fYear.value, m1=Array.from(document.getElementById("monthContainer1").querySelectorAll("input:checked")).map(i=>i.value);
+  const y2=fYear2.value, m2=Array.from(document.getElementById("monthContainer2").querySelectorAll("input:checked")).map(i=>i.value);
+  const c=fComercial.value, s=fSite.value, a=fArea.value;
+
+  const d1=filteredBy(y1,m1,c,s,a), d2=(y2!=="Sin comparar")?filteredBy(y2,m2,c,s,a):[];
+  const t1=d1.reduce((acc,b)=>acc+b.ingreso,0), t2=d2.reduce((acc,b)=>acc+b.ingreso,0);
+
+  let pctT=""; 
+  if(t2>0){ 
+    const df=(t1-t2)/t2*100; 
+    pctT=`<span class="pct" style="color:${df>=0?'#38bdf8':'#f87171'}">${df>=0?'+':''}${df.toFixed(0)}%</span>`; 
+  }
+
+  kpisTotals.innerHTML=""; 
+  kpisRows.innerHTML="";
+  // Totales (formateados con punto de millar y € sin espacio)
+  kpi(kpisTotals,`Total ${y1}`,t1,pctT,"--totales-color");
+  if(y2!=="Sin comparar") kpi(kpisTotals,`Total ${y2}`,t2,"","--totales-color");
+
+  // Bloques por tipo
+  const blocks=[
+    {name:"Sponsorship", type:"Familia", color:"--bc-color"},
+    {name:"Branded Content", type:"Producto", color:"--bc-color"},
+    {name:"Branded Content video", displayName: "Branded Content Vídeo", type:"Producto", color:"--bc-color"},
+    {name:"Branded Content Sindicated", displayName: "Branded Content Sindicado", type:"Producto", color:"--bc-color"},
+    {name:"Curated", type:"Producto", color:"--curated-color"},
+    {name:"Social Networks", type:"Familia", color:"--social-color"},
+    {name:"Varios redes sociales (sponsored Post)", displayName: "Social Paid", type:"Producto", color:"--social-color"},
+    {name:"Instagram (Orgánico)", displayName: "Social Organic", type:"Producto", color:"--social-color"},
+    {name:"Display", type:"Familia", color:"--display-color"},
+    {name:"Programatica Display Directo", type:"Familia", color:"--program-directo"},
+    {name:"Programatica Display Indirecto", type:"Familia", color:"--program-directo"},
+    {name:"Video Programatico Directo", type:"Familia", color:"--program-directo"},
+    {name:"Video Programatico Indirecto", type:"Familia", color:"--program-directo"},
+    {name:"Video", type:"Familia", color:"--video-color"}
+  ];
+
+  blocks.forEach(b=>{
+    const divT=document.createElement("div"); 
+    divT.className="section-title"; 
+    divT.textContent=b.displayName || b.name; 
+    kpisRows.appendChild(divT);
+
+    const filterF = (d) => b.type==="Producto" ? d.Producto.trim()===b.name : d.Familia.trim()===b.name;
+    const r1=d1.filter(filterF), r2=d2.filter(filterF);
+
+    const sum1=r1.reduce((acc,b)=>acc+b.ingreso,0), sum2=r2.reduce((acc,b)=>acc+b.ingreso,0);
+    const lines1=r1.filter(x=>x.ingreso>0).length, lines2=r2.filter(x=>x.ingreso>0).length;
+    const avg1= lines1 ? (sum1/lines1) : 0;  // promedio “Presu Medio”
+    const avg2= lines2 ? (sum2/lines2) : 0;
+
+    let pS="", pA="";
+    if(sum2>0){ 
+      const d=(sum1-sum2)/sum2*100; 
+      pS=`<span class="pct" style="color:${d>=0?'#38bdf8':'#f87171'}">${d>=0?'+':''}${d.toFixed(0)}%</span>`; 
+    }
+    if(avg2>0){ 
+      const d=(avg1-avg2)/avg2*100; 
+      pA=`<span class="pct" style="color:${d>=0?'#38bdf8':'#f87171'}">${d>=0?'+':''}${d.toFixed(0)}%</span>`; 
+    }
+
+    // Totales por bloque
+    kpi(kpisRows,`Total ${y1}`,sum1,pS,b.color);
+    if(y2!=="Sin comparar") kpi(kpisRows,`Total ${y2}`,sum2,"",b.color);
+    
+    // Presupuesto medio por bloque (formateado con punto y € sin espacio)
+    kpi(kpisRows,`Presu Medio ${y1}`,avg1,pA,b.color);
+    if(y2!=="Sin comparar") kpi(kpisRows,`Presu Medio ${y2}`,avg2,"",b.color);
+  });
+}
+</script>
+</body>
+</html>
